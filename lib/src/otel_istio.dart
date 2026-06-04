@@ -2,7 +2,6 @@
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
 import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
-import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_istio_suppression.dart';
 
@@ -54,60 +53,77 @@ Future<T> tracedIstio<T>({
   final t = tracer ?? OTel.tracerProvider().getTracer('otel_istio');
   final span = t.startSpan('istio $operation', kind: SpanKind.internal);
   try {
-    span.setStringAttribute('service.mesh', 'istio');
+    span.addAttributes(
+        OTel.attributes([OTel.attributeString('service.mesh', 'istio')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.sourceWorkload != null) {
-        span.setStringAttribute('source.workload', res.sourceWorkload!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('source.workload', res.sourceWorkload!)]));
       }
       if (res.sourceNamespace != null) {
-        span.setStringAttribute('source.namespace', res.sourceNamespace!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('source.namespace', res.sourceNamespace!)]));
       }
       if (res.sourcePrincipal != null) {
-        span.setStringAttribute('source.principal', res.sourcePrincipal!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('source.principal', res.sourcePrincipal!)]));
       }
       if (res.destinationWorkload != null) {
-        span.setStringAttribute(
-          'destination.workload',
-          res.destinationWorkload!,
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            'destination.workload',
+            res.destinationWorkload!,
+          )
+        ]));
       }
       if (res.destinationNamespace != null) {
-        span.setStringAttribute(
-          'destination.namespace',
-          res.destinationNamespace!,
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            'destination.namespace',
+            res.destinationNamespace!,
+          )
+        ]));
       }
       if (res.destinationPrincipal != null) {
-        span.setStringAttribute(
-          'destination.principal',
-          res.destinationPrincipal!,
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            'destination.principal',
+            res.destinationPrincipal!,
+          )
+        ]));
       }
       if (res.destinationService != null) {
-        span.setStringAttribute('destination.service', res.destinationService!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('destination.service', res.destinationService!)
+        ]));
       }
       if (res.protocol != null) {
-        span.setStringAttribute('network.protocol.name', res.protocol!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('network.protocol.name', res.protocol!)]));
       }
       if (res.requestMtls != null) {
-        span.setBoolAttribute('istio.mtls', res.requestMtls!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeBool('istio.mtls', res.requestMtls!)]));
       }
       if (res.statusCode != null) {
-        span.setIntAttribute('http.response.status_code', res.statusCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
       }
       if (res.errorCode != null) {
-        span.setStringAttribute('istio.error.code', res.errorCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('istio.error.code', res.errorCode!)]));
       }
-      final fail =
-          res.errorCode != null ||
+      final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.setStringAttribute(
-          ErrorResource.errorType.key,
-          res.errorCode ?? 'istio.error',
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            ErrorResource.errorType.key,
+            res.errorCode ?? 'istio.error',
+          )
+        ]));
         span.setStatus(SpanStatusCode.Error, res.errorMessage);
       }
     }
